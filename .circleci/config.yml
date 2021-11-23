@@ -76,7 +76,7 @@ jobs: # basic units of work in a run
           command: |
             echo "CircleCI playground"
             ls -l 
-            runpwd
+            pwd
             echo "this must only be executed for master branch only"
 anchors:
   branch_filters: &run_for_master_branch
