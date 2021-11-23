@@ -71,10 +71,13 @@ jobs: # basic units of work in a run
       - image: circleci/golang:1.13
     parallelism: 1
     steps:
-      - run: |
+      - run:
+        name: Push master images
+        command: |
+          echo "CircleCI playground"
           ls -l 
           runpwd
-          echo "this must only be executed for master branch"
+          echo "this must only be executed for master branch only"
 anchors:
   branch_filters: &run_for_master_branch
     filters:
