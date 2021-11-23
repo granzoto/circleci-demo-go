@@ -66,8 +66,27 @@ jobs: # basic units of work in a run
 
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
+  push-master-images:
+    docker:
+      - image: circleci/golang:1.13
+    parallelism: 1
+    steps:
+      - run: |
+          ls -l 
+          runpwd
+          echo "this must only be executed for master branch"
+anchors:
+  branch_filters: &run_for_master_branch
+    filters:
+      branches:
+        ignore: /.*/
+        only: /master/
 workflows:
   version: 2
   build-workflow:
     jobs:
       - build
+      - push-master-images:
+          <<: *run_for_master_branch
+          requires:
+            - build
