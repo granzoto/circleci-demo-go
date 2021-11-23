@@ -72,12 +72,12 @@ jobs: # basic units of work in a run
     parallelism: 1
     steps:
       - run:
-        name: Push master images
-        command: |
-          echo "CircleCI playground"
-          ls -l 
-          runpwd
-          echo "this must only be executed for master branch only"
+          name: Push master images
+          command: |
+            echo "CircleCI playground"
+            ls -l 
+            runpwd
+            echo "this must only be executed for master branch only"
 anchors:
   branch_filters: &run_for_master_branch
     filters:
