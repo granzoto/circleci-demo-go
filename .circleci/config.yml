@@ -60,6 +60,11 @@ jobs: # basic units of work in a run
             sleep 5
             curl --retry 10 --retry-delay 1 -X POST --header "Content-Type: application/json" -d '{"email":"test@example.com","name":"Test User"}' http://localhost:8080/contacts
 
+      - run:
+          name: Copy all sql files to /tmp/test-results
+          command: |
+            find ./ -name "*sql" | tar -c -T - | tar -C /tmp/test-results -xv
+
       - store_artifacts: # upload test summary for display in Artifacts
           path: /tmp/test-results
           destination: raw-test-output
