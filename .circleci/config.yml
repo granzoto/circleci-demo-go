@@ -1,4 +1,6 @@
 version: 2 # use CircleCI 2.0
+orbs:
+    go: circleci/go@1.7.1
 jobs: # basic units of work in a run
   build: # runs not using Workflows must have a `build` job as entry point
     docker: # run the steps with Docker
@@ -38,7 +40,8 @@ jobs: # basic units of work in a run
           command: |
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
-
+      - go/test
+          coverpkg: ./api/...,./client/...,./cmd/...,./pkg/...
       - run: make # pull and build dependencies for the project
 
       - save_cache:
