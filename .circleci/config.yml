@@ -41,6 +41,7 @@ jobs: # basic units of work in a run
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
       - go/test
+          covermode: count
           coverpkg: api
           #coverpkg: ./api/... ./client/... ./cmd/... ./pkg/...
       - run: make # pull and build dependencies for the project
