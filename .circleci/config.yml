@@ -4,7 +4,7 @@ orbs:
 jobs: # basic units of work in a run
   verify-go:
     executor: my-executor
-  steps:
+    steps:
       - run:
           name: go version
           command: |
