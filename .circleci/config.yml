@@ -20,6 +20,10 @@ jobs: # basic units of work in a run
     steps: # steps that comprise the `build` job
       - checkout # check out source code to working directory
       - run: mkdir -p $TEST_RESULTS # create the test results directory
+      - run:
+          name: go version
+          command: |
+            go version
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
@@ -93,9 +97,17 @@ anchors:
       branches:
         ignore: /.*/
         only: /master/
+
+executors:
+  my-executor:
+    machine:
+      image: ubuntu-2004:2022.07.1
+    resource_class: large
+
 workflows:
   version: 2
   build-workflow:
+    executor: my-executor
     jobs:
       - build
       - push-master-images:
