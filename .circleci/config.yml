@@ -1,4 +1,4 @@
-version: 2 # use CircleCI 2.0
+version: 2.1 # use CircleCI 2.1
 jobs: # basic units of work in a run
   podman:
     executor: my-executor
@@ -12,7 +12,7 @@ jobs: # basic units of work in a run
 executors:
   my-executor:
     machine:
-      image: ubuntu-2004:2022.07.1
+      image: ubuntu-2004:current
     resource_class: medium
 
 workflows:
