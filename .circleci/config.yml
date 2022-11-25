@@ -13,7 +13,7 @@ executors:
   my-executor:
     machine:
       image: ubuntu-2004:2022.07.1
-    resource_class: small
+    resource_class: medium
 
 workflows:
   version: 2
