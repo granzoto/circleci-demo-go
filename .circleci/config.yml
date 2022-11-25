@@ -7,6 +7,7 @@ jobs: # basic units of work in a run
           name: install podman
           command: |
             apt install podman
+            podman version
 
 executors:
   my-executor:
