@@ -8,8 +8,34 @@ jobs: # basic units of work in a run
           command: |
             sudo mkdir -p /etc/apt/keyrings
 
+            # configure docker for the insecure registry
+            sudo echo "{ \"insecure-registries\":[\"0.0.0.0:5000\"] }" >> /etc/docker/daemon.json
+            sudo systemctl restart docker
+
             # Run the registry
             docker run -d -p 5000:5000 --name registry registry
+
+            # pull images from quay
+            docker pull quay.io/skupper/skupper-router:latest
+            docker pull quay.io/skupper/service-controller:main
+            docker pull quay.io/skupper/service-controller:master
+            docker pull quay.io/skupper/config-sync:master
+            docker pull quay.io/skupper/vflow-collector:master
+            docker pull quay.io/skupper/site-controller:master
+
+            # tag images for local registry
+            docker tag quay.io/skupper/skupper-router:latest 0.0.0.0:5000/skupper-router:latest
+            docker tag quay.io/skupper/service-controller:master 0.0.0.0:5000/service-controller:master
+            docker tag quay.io/skupper/config-sync:master 0.0.0.0:5000/config-sync:master
+            docker tag quay.io/skupper/vflow-collector:master 0.0.0.0:5000/vflow-collector:master
+            docker tag quay.io/skupper/site-controller:master 0.0.0.0:5000/site-controller:master
+
+            # push images
+            docker push 0.0.0.0:5000/skupper-router:latest
+            docker push 0.0.0.0:5000/service-controller:master
+            docker push 0.0.0.0:5000/site-controller:master
+            docker push 0.0.0.0:5000/config-sync:master
+            docker push 0.0.0.0:5000/vflow-collector:master
 
             # Update OS and install ifconfig
             sudo apt update
