@@ -17,7 +17,6 @@ jobs: # basic units of work in a run
 
             # pull images from quay
             docker pull quay.io/skupper/skupper-router:latest
-            docker pull quay.io/skupper/service-controller:main
             docker pull quay.io/skupper/service-controller:master
             docker pull quay.io/skupper/config-sync:master
             docker pull quay.io/skupper/vflow-collector:master
