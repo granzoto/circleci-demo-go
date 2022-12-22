@@ -9,7 +9,7 @@ jobs: # basic units of work in a run
             sudo mkdir -p /etc/apt/keyrings
 
             # configure docker for the insecure registry
-            sudo echo "{ \"insecure-registries\":[\"0.0.0.0:5000\"] }" >> /etc/docker/daemon.json
+            sudo sh -c 'echo "{ \"insecure-registries\":[\"0.0.0.0:5000\"] }" >> /etc/docker/daemon.json2'
             sudo systemctl restart docker
 
             # Run the registry
