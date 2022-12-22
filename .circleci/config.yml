@@ -65,8 +65,8 @@ jobs: # basic units of work in a run
             sudo apt install net-tools
 
             # ifconfig to pick the correct IP
-            for inet in $(ifconfig | grep mtu | cut -d ":" -f 1); do ip=$(ifconfig ${inet} | grep "inet " | awk -F " " '{print $2}'); \
-              if [ "${ip}" != "" ]; then echo ${inet}=${ip};fi; curl -v http://${ip}:5000/v2/_catalog/; done
+            #for inet in $(ifconfig | grep mtu | cut -d ":" -f 1); do ip=$(ifconfig ${inet} | grep "inet " | awk -F " " '{print $2}'); \
+            #  if [ "${ip}" != "" ]; then echo ${inet}=${ip};fi; curl -v http://${ip}:5000/v2/_catalog/; done
 
       - minikube-install
       - minikube-start-medium-with-registry
