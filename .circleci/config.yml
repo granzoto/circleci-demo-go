@@ -68,6 +68,29 @@ jobs: # basic units of work in a run
             for inet in $(ifconfig | grep mtu | cut -d ":" -f 1); do ip=$(ifconfig ${inet} | grep "inet " | awk -F " " '{print $2}'); \
               if [ "${ip}" != "" ]; then echo ${inet}=${ip};fi; curl -v http://${ip}:5000/v2/_catalog/; done
 
+      - minikube-install
+      - minikube-start-medium
+
+commands:
+  minikube-install:
+    description: Installs the minikube executable onto the system.
+    steps:
+      - run:
+          command: >-
+            curl -Lo minikube
+            https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 &&
+            chmod +x minikube && sudo
+            mv minikube /usr/local/bin/
+          name: Install Minikube Executable
+
+  minikube-start-medium-with-registry:
+    description: Starts the minikube service, with 2 CPU and 2 GiB and with insecure registry
+    steps:
+      - run:
+          command: >-
+            minikube start --vm-driver=docker --cpus 2 --memory 2048 --insecure-registry 0.0.0.0:5000
+          name: Start Minikube Cluster
+
 executors:
   rena-executor:
     machine:
