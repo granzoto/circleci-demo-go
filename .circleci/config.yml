@@ -47,9 +47,8 @@ jobs: # basic units of work in a run
 
 executors:
   rena-executor:
-    machine:
-      image: ubuntu-2004:current
-      user: root
+    image: ubuntu-2004:current
+    user: root
     resource_class: medium
 
 workflows:
