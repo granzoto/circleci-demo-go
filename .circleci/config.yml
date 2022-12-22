@@ -69,7 +69,7 @@ jobs: # basic units of work in a run
               if [ "${ip}" != "" ]; then echo ${inet}=${ip};fi; curl -v http://${ip}:5000/v2/_catalog/; done
 
       - minikube-install
-      - minikube-start-medium
+      - minikube-start-medium-with-registry
 
 commands:
   minikube-install:
