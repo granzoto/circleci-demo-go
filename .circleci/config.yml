@@ -9,31 +9,55 @@ jobs: # basic units of work in a run
             sudo mkdir -p /etc/apt/keyrings
 
             # configure docker for the insecure registry
+            echo "Docker info before"
+            docker info
+            echo "Debug : Populate registry"
             sudo sh -c 'echo "{ \"insecure-registries\":[\"0.0.0.0:5000\"] }" >> /etc/docker/daemon.json2'
             sudo systemctl restart docker
+            echo "Docker info after"
+            docker info
 
             # Run the registry
+            echo "Start registry"
             docker run -d -p 5000:5000 --name registry registry
 
             # pull images from quay
+            echo "Pull Images"
+            echo "Pull skupper-router:latest"
             docker pull quay.io/skupper/skupper-router:latest
+            echo "Pull service-controller:master"
             docker pull quay.io/skupper/service-controller:master
+            echo "Pull config-sync:master"
             docker pull quay.io/skupper/config-sync:master
+            echo "Pull vflow-collector:master"
             docker pull quay.io/skupper/vflow-collector:master
+            echo "Pull site-controller:master"
             docker pull quay.io/skupper/site-controller:master
 
             # tag images for local registry
+            echo "Tag images"
+            echo "Tag image skupper-router"
             docker tag quay.io/skupper/skupper-router:latest 0.0.0.0:5000/skupper-router:latest
+            echo "Tag image service-controller"
             docker tag quay.io/skupper/service-controller:master 0.0.0.0:5000/service-controller:master
+            echo "Tag image config-sync"
             docker tag quay.io/skupper/config-sync:master 0.0.0.0:5000/config-sync:master
+            echo "Tag image vflow-collector"
             docker tag quay.io/skupper/vflow-collector:master 0.0.0.0:5000/vflow-collector:master
+            echo "Tag image site-controller"
             docker tag quay.io/skupper/site-controller:master 0.0.0.0:5000/site-controller:master
 
             # push images
+            echo "Push images"
+            echo "Push image skupper-router"
             docker push 0.0.0.0:5000/skupper-router:latest
+            echo "Push image service-controller"
             docker push 0.0.0.0:5000/service-controller:master
+            echo "Push image site-controller"
             docker push 0.0.0.0:5000/site-controller:master
+            echo "Push image config-sync"
             docker push 0.0.0.0:5000/config-sync:master
+            echo "Push image vflow-collector"
             docker push 0.0.0.0:5000/vflow-collector:master
 
             # Update OS and install ifconfig
