@@ -87,9 +87,14 @@ commands:
     description: Starts the minikube service, with 2 CPU and 2 GiB and with insecure registry
     steps:
       - run:
-          command: >-
-            minikube start --vm-driver=docker --cpus 2 --memory 2048 --insecure-registry 0.0.0.0:5000
+          command: |
+            export REGISTRY_IP_MINIKUBE=`docker info | grep "ip-" | cut -d " " -f 3 | awk -F "-" '{print $2"."$3"."$4"."$5}'`
+            echo "RegistryIP = ${REGISTRY_IP_MINIKUBE}"
+            minikube start --vm-driver=docker --cpus 2 --memory 2048 --insecure-registry ${REGISTRY_IP_MINIKUBE}:5000
           name: Start Minikube Cluster
+#          command: >-
+#            minikube start --vm-driver=docker --cpus 2 --memory 2048 --insecure-registry 0.0.0.0:5000
+#          name: Start Minikube Cluster
 
 executors:
   rena-executor:
