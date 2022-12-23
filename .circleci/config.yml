@@ -1,4 +1,31 @@
 version: 2.1 # use CircleCI 2.1
+
+orbs:
+  docker: circleci/docker@1.0.1
+  kube-orb: circleci/kubernetes@0.11.0
+  go: circleci/go@1.7.1
+
+parameters:
+  ci_service_controller_image:
+    default: quay.io/skupper/service-controller:${CIRCLE_SHA1}
+    type: string
+
+  ci_site_controller_image:
+    default: quay.io/skupper/site-controller:${CIRCLE_SHA1}
+    type: string
+
+  ci_config_sync_image:
+    default: quay.io/skupper/config-sync:${CIRCLE_SHA1}
+    type: string
+
+  ci_vflow_collector_image:
+    default: quay.io/skupper/vflow-collector:${CIRCLE_SHA1}
+    type: string
+
+  ci_test_image:
+    default: quay.io/skupper/skupper-tests:${CIRCLE_SHA1}
+    type: string
+
 jobs: # basic units of work in a run
   registry:
     executor: rena-executor
@@ -9,67 +36,40 @@ jobs: # basic units of work in a run
             sudo mkdir -p /etc/apt/keyrings
 
             # configure docker for the insecure registry
-            echo "Docker info before"
-            docker info
-            echo "Debug : Populate registry"
             sudo sh -c 'echo "{ \"insecure-registries\":[\"0.0.0.0:5000\"] }" >> /etc/docker/daemon.json'
             sudo systemctl restart docker
-            echo "Docker info after"
-            docker info
 
             # Run the registry
-            echo "Start registry"
             docker run -d -p 5000:5000 --name registry registry
 
             # pull images from quay
-            echo "Pull Images"
-            echo "Pull skupper-router:latest"
             docker pull quay.io/skupper/skupper-router:latest
-            echo "Pull service-controller:master"
             docker pull quay.io/skupper/service-controller:master
-            echo "Pull config-sync:master"
             docker pull quay.io/skupper/config-sync:master
-            echo "Pull vflow-collector:master"
             docker pull quay.io/skupper/vflow-collector:master
-            echo "Pull site-controller:master"
             docker pull quay.io/skupper/site-controller:master
 
             # tag images for local registry
-            echo "Tag images"
-            echo "Tag image skupper-router"
             docker tag quay.io/skupper/skupper-router:latest 0.0.0.0:5000/skupper-router:latest
-            echo "Tag image service-controller"
             docker tag quay.io/skupper/service-controller:master 0.0.0.0:5000/service-controller:master
-            echo "Tag image config-sync"
             docker tag quay.io/skupper/config-sync:master 0.0.0.0:5000/config-sync:master
-            echo "Tag image vflow-collector"
             docker tag quay.io/skupper/vflow-collector:master 0.0.0.0:5000/vflow-collector:master
-            echo "Tag image site-controller"
             docker tag quay.io/skupper/site-controller:master 0.0.0.0:5000/site-controller:master
 
             # push images
-            echo "Push images"
-            echo "Push image skupper-router"
             docker push 0.0.0.0:5000/skupper-router:latest
-            echo "Push image service-controller"
             docker push 0.0.0.0:5000/service-controller:master
-            echo "Push image site-controller"
             docker push 0.0.0.0:5000/site-controller:master
-            echo "Push image config-sync"
             docker push 0.0.0.0:5000/config-sync:master
-            echo "Push image vflow-collector"
             docker push 0.0.0.0:5000/vflow-collector:master
 
             # Update OS and install ifconfig
             sudo apt update
             sudo apt install net-tools
 
-            # ifconfig to pick the correct IP
-            #for inet in $(ifconfig | grep mtu | cut -d ":" -f 1); do ip=$(ifconfig ${inet} | grep "inet " | awk -F " " '{print $2}'); \
-            #  if [ "${ip}" != "" ]; then echo ${inet}=${ip};fi; curl -v http://${ip}:5000/v2/_catalog/; done
-
       - minikube-install
       - minikube-start-medium-with-registry
+      - prepare_for_local_cluster_tests
 
 commands:
   minikube-install:
@@ -92,9 +92,32 @@ commands:
             echo "RegistryIP = ${REGISTRY_IP_MINIKUBE}"
             minikube start --vm-driver=docker --cpus 2 --memory 2048 --insecure-registry ${REGISTRY_IP_MINIKUBE}:5000
           name: Start Minikube Cluster
-#          command: >-
-#            minikube start --vm-driver=docker --cpus 2 --memory 2048 --insecure-registry 0.0.0.0:5000
-#          name: Start Minikube Cluster
+
+  prepare_for_local_cluster_tests:
+    description: install right versions of go, docker, kubectl, and also build
+    steps:
+      - run:
+          name: Export environment variables persistent in execution shell
+          command: |
+            echo 'export KUBECONFIG=/home/circleci/.kube/config' >> $BASH_ENV
+            echo 'export GOROOT=/usr/local/go' >> $BASH_ENV
+            echo 'export GOPATH=$HOME/go' >> $BASH_ENV
+            echo 'export PATH=$GOPATH/bin:$GOROOT/bin:$PATH' >> $BASH_ENV
+            echo 'export SKUPPER_SERVICE_CONTROLLER_IMAGE=<< pipeline.parameters.ci_service_controller_image >>' >> $BASH_ENV
+            echo 'export SKUPPER_SITE_CONTROLLER_IMAGE=<< pipeline.parameters.ci_site_controller_image >>' >> $BASH_ENV
+            echo 'export SKUPPER_CONFIG_SYNC_IMAGE=<< pipeline.parameters.ci_config_sync_image >>' >> $BASH_ENV
+            echo 'export SKUPPER_VFLOW_COLLECTOR_IMAGE=<< pipeline.parameters.ci_vflow_collector_image >>' >> $BASH_ENV
+            echo 'export TEST_IMAGE=<< pipeline.parameters.ci_test_image >>' >> $BASH_ENV
+            source $BASH_ENV
+      - checkout
+      - run:
+          name: cleanup previous go installation
+          command: sudo rm -rf /usr/local/go
+      - docker/install-docker
+      - go/install
+      - kube-orb/install-kubectl
+      - run: make generate-client
+      - run: make
 
 executors:
   rena-executor:
