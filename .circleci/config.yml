@@ -69,7 +69,6 @@ jobs: # basic units of work in a run
 
       - minikube-install
       - minikube-start-medium-with-registry
-      - prepare_for_local_cluster_tests
 
 commands:
   minikube-install:
@@ -92,32 +91,6 @@ commands:
             echo "RegistryIP = ${REGISTRY_IP_MINIKUBE}"
             minikube start --vm-driver=docker --cpus 2 --memory 2048 --insecure-registry ${REGISTRY_IP_MINIKUBE}:5000
           name: Start Minikube Cluster
-
-  prepare_for_local_cluster_tests:
-    description: install right versions of go, docker, kubectl, and also build
-    steps:
-      - run:
-          name: Export environment variables persistent in execution shell
-          command: |
-            echo 'export KUBECONFIG=/home/circleci/.kube/config' >> $BASH_ENV
-            echo 'export GOROOT=/usr/local/go' >> $BASH_ENV
-            echo 'export GOPATH=$HOME/go' >> $BASH_ENV
-            echo 'export PATH=$GOPATH/bin:$GOROOT/bin:$PATH' >> $BASH_ENV
-            echo 'export SKUPPER_SERVICE_CONTROLLER_IMAGE=<< pipeline.parameters.ci_service_controller_image >>' >> $BASH_ENV
-            echo 'export SKUPPER_SITE_CONTROLLER_IMAGE=<< pipeline.parameters.ci_site_controller_image >>' >> $BASH_ENV
-            echo 'export SKUPPER_CONFIG_SYNC_IMAGE=<< pipeline.parameters.ci_config_sync_image >>' >> $BASH_ENV
-            echo 'export SKUPPER_VFLOW_COLLECTOR_IMAGE=<< pipeline.parameters.ci_vflow_collector_image >>' >> $BASH_ENV
-            echo 'export TEST_IMAGE=<< pipeline.parameters.ci_test_image >>' >> $BASH_ENV
-            source $BASH_ENV
-      - checkout
-      - run:
-          name: cleanup previous go installation
-          command: sudo rm -rf /usr/local/go
-      - docker/install-docker
-      - go/install
-      - kube-orb/install-kubectl
-      - run: make generate-client
-      - run: make
 
 executors:
   rena-executor:
